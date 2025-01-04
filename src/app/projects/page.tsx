@@ -9,7 +9,7 @@ const projects = [
     name: "Adoddle",
     status: "Off Track" as "Off Track" | "On Track",
     description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
     dueDate: "05 April 2023",
     issues: 14,
     teamMembers: ["John Doe", "Jane Smith", "David Lee"],
@@ -18,7 +18,7 @@ const projects = [
     name: "BuildIt",
     status: "On Track" as "Off Track" | "On Track",
     description:
-      "A project management tool for construction companies to manage their projects efficiently.",
+    "A project management tool for construction companies to manage their projects efficiently.",
     dueDate: "12 June 2023",
     issues: 5,
     teamMembers: ["Alice Johnson", "Bob Brown", "Charlie Davis"],
@@ -27,7 +27,7 @@ const projects = [
     name: "HealthPlus",
     status: "Off Track" as "Off Track" | "On Track",
     description:
-      "A healthcare management system to streamline patient records and appointments.",
+    "A healthcare management system to streamline patient records and appointments.",
     dueDate: "20 July 2023",
     issues: 20,
     teamMembers: ["Eve White", "Frank Green", "Grace Black"],
@@ -106,8 +106,15 @@ const projects = [
   },
 ];
 
+import CreateProjectModal from "@/components/ProjectsPage/CreateProjectModal";
+
 export default function Projects() {
   const [currentPage, setCurrentPage] = useState(1);
+  const [showModal, setShowModal] = useState(false);
+
+  const handleCreateButtonClick = () => {
+    setShowModal(true);
+  };
   const projectsPerPage = 6;
 
   const indexOfLastProject = currentPage * projectsPerPage;
@@ -124,12 +131,13 @@ export default function Projects() {
       <div className="flex flex-row justify-between items-center mb-4">
         <h1 className="text-2xl font-semibold mb-4">Projects</h1>
         <button
-          onClick={() => alert("Create Project button clicked")}
+          onClick={handleCreateButtonClick}
           className="ml-auto bg-green-400 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors"
         >
           Create Project
         </button>
       </div>
+      <CreateProjectModal isOpen={showModal} onClose={() => setShowModal(false)} />
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         <AnimatePresence>
           {currentProjects.map((project) => (
