@@ -1,7 +1,8 @@
-'use client';
+"use client";
 import { useState } from "react";
 import ProjectCard from "@/components/ProjectsPage/ProjectCard";
 import React from "react";
+import { AnimatePresence, motion } from "motion/react";
 
 const projects = [
   {
@@ -58,53 +59,52 @@ const projects = [
     issues: 12,
     teamMembers: ["Nina Gray", "Oscar Silver", "Paul Gold"],
   },
-{
-  name: "GreenEnergy",
-  status: "On Track" as "Off Track" | "On Track",
-  description:
-    "A renewable energy project focused on developing sustainable energy solutions.",
-  dueDate: "22 November 2023",
-  issues: 7,
-  teamMembers: ["Olivia Brown", "Liam White", "Sophia Black"],
-},
-{
-  name: "Foodie",
-  status: "Off Track" as "Off Track" | "On Track",
-  description:
-    "A food delivery app that connects users with local restaurants and food vendors.",
-  dueDate: "05 December 2023",
-  issues: 15,
-  teamMembers: ["Emma Green", "Noah Blue", "Ava Red"],
-},
-{
-  name: "FitLife",
-  status: "On Track" as "Off Track" | "On Track",
-  description:
-    "A fitness app that provides workout plans and tracks user progress.",
-  dueDate: "18 January 2024",
-  issues: 4,
-  teamMembers: ["Isabella Yellow", "Mason Orange", "Lucas Purple"],
-},
-{
-  name: "HomeSecure",
-  status: "Off Track" as "Off Track" | "On Track",
-  description:
-    "A home security system that offers real-time monitoring and alerts.",
-  dueDate: "28 February 2024",
-  issues: 10,
-  teamMembers: ["Mia Pink", "Ethan Gray", "Amelia Silver"],
-},
-{
-  name: "EventPlanner",
-  status: "On Track" as "Off Track" | "On Track",
-  description:
-    "An event planning app that helps users organize and manage events.",
-  dueDate: "15 March 2024",
-  issues: 6,
-  teamMembers: ["Charlotte Gold", "James Bronze", "Harper Copper"],
-}
+  {
+    name: "GreenEnergy",
+    status: "On Track" as "Off Track" | "On Track",
+    description:
+      "A renewable energy project focused on developing sustainable energy solutions.",
+    dueDate: "22 November 2023",
+    issues: 7,
+    teamMembers: ["Olivia Brown", "Liam White", "Sophia Black"],
+  },
+  {
+    name: "Foodie",
+    status: "Off Track" as "Off Track" | "On Track",
+    description:
+      "A food delivery app that connects users with local restaurants and food vendors.",
+    dueDate: "05 December 2023",
+    issues: 15,
+    teamMembers: ["Emma Green", "Noah Blue", "Ava Red"],
+  },
+  {
+    name: "FitLife",
+    status: "On Track" as "Off Track" | "On Track",
+    description:
+      "A fitness app that provides workout plans and tracks user progress.",
+    dueDate: "18 January 2024",
+    issues: 4,
+    teamMembers: ["Isabella Yellow", "Mason Orange", "Lucas Purple"],
+  },
+  {
+    name: "HomeSecure",
+    status: "Off Track" as "Off Track" | "On Track",
+    description:
+      "A home security system that offers real-time monitoring and alerts.",
+    dueDate: "28 February 2024",
+    issues: 10,
+    teamMembers: ["Mia Pink", "Ethan Gray", "Amelia Silver"],
+  },
+  {
+    name: "EventPlanner",
+    status: "On Track" as "Off Track" | "On Track",
+    description:
+      "An event planning app that helps users organize and manage events.",
+    dueDate: "15 March 2024",
+    issues: 6,
+    teamMembers: ["Charlotte Gold", "James Bronze", "Harper Copper"],
+  },
 ];
-
 
 export default function Projects() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -112,28 +112,48 @@ export default function Projects() {
 
   const indexOfLastProject = currentPage * projectsPerPage;
   const indexOfFirstProject = indexOfLastProject - projectsPerPage;
-  const currentProjects = projects.slice(indexOfFirstProject, indexOfLastProject);
+  const currentProjects = projects.slice(
+    indexOfFirstProject,
+    indexOfLastProject
+  );
 
   const totalPages = Math.ceil(projects.length / projectsPerPage);
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-semibold mb-4">Projects</h1>
+      <div className="flex flex-row justify-between items-center mb-4">
+        <h1 className="text-2xl font-semibold mb-4">Projects</h1>
+        <button
+          onClick={() => alert("Create Project button clicked")}
+          className="ml-auto bg-green-400 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors"
+        >
+          Create Project
+        </button>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {currentProjects.map((project) => (
-          <ProjectCard
-            key={project.name}
-            {...project}
-          />
-        ))}
+        <AnimatePresence>
+          {currentProjects.map((project) => (
+            <motion.div
+              key={project.name}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              // exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.1 }}>
+              <ProjectCard {...project} />
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
       <div className="flex justify-center mt-4">
         {Array.from({ length: totalPages }, (_, index) => (
           <button
             key={index + 1}
             onClick={() => setCurrentPage(index + 1)}
-            className={`px-4 py-2 mx-1 ${currentPage === index + 1 ? "bg-blue-500 text-white" : "bg-gray-200"}`}
-          >
+            className={`px-4 rounded-md py-2 mx-1 ${
+              currentPage === index + 1
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 hover:bg-gray-300"
+            }`}>
             {index + 1}
           </button>
         ))}
