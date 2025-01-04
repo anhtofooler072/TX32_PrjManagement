@@ -127,7 +127,7 @@ export default function Projects() {
   const totalPages = Math.ceil(projects.length / projectsPerPage);
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 flex flex-col justify-between h-full">
       <div className="flex flex-row justify-between items-center mb-4">
         <h1 className="text-2xl font-semibold mb-4">Projects</h1>
         <button
