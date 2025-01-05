@@ -127,9 +127,9 @@ export default function Projects() {
   const totalPages = Math.ceil(projects.length / projectsPerPage);
 
   return (
-    <div className="container mx-auto p-4 flex flex-col justify-between h-full">
-      <div className="flex flex-row justify-between items-center mb-4">
-        <h1 className="text-2xl font-semibold mb-4">Projects</h1>
+    <div className="p-5 flex flex-col justify-between h-full bg-white w-full overflow-y-scroll">
+      <div className="flex flex-row justify-between items-center mb-6">
+        <h1 className="text-2xl text-gray-700 font-bold  ml-2">Projects</h1>
         <button
           onClick={handleCreateButtonClick}
           className="ml-auto bg-green-400 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors"
