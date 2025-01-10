@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useContext } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -15,15 +16,84 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ArrowRight, Lock, Mail } from "lucide-react";
+import { z } from "zod";
+import { toast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
+import { ProfileContext } from "@/contexts/profile-context";
+import { setAccessTokenToLocalStorage } from "@/lib/utils";
+
+const loginSchema = z.object({
+  email: z.string().email("Email không hợp lệ"),
+  password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const { setProfile } = useContext(ProfileContext);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+  });
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsLoading(false);
+    try {
+      const loginResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_ENDPOINT}/access/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        }
+      );
+
+      if (!loginResponse.ok) {
+        throw new Error("Đã có lỗi xảy ra");
+      }
+
+      const loginData = await loginResponse.json();
+      const { access_token } = loginData;
+
+      setAccessTokenToLocalStorage(access_token);
+
+      const profileResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_ENDPOINT}/user/profile`,
+        {
+          headers: {
+            Authorization: `Bearer ${access_token}`,
+          },
+        }
+      );
+
+      if (!profileResponse.ok) {
+        throw new Error("Không thể lấy thông tin người dùng");
+      }
+
+      const profileData = await profileResponse.json();
+      setProfile(profileData);
+
+      toast({
+        description: "Đăng nhập thành công",
+      });
+
+      router.push("/");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Error unknown",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -42,65 +112,7 @@ export default function LoginPage() {
           Log in to your account and continue your journey in efficient project
           management.
         </p>
-        <div className="w-full max-w-md space-y-4">
-          <div className="flex items-center p-4 bg-white rounded-lg shadow-md">
-            <div className="bg-indigo-100 rounded-full p-2 mr-4">
-              <svg
-                className="w-6 h-6 text-indigo-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                ></path>
-              </svg>
-            </div>
-            <p className="text-gray-700">Manage projects with ease</p>
-          </div>
-          <div className="flex items-center p-4 bg-white rounded-lg shadow-md">
-            <div className="bg-indigo-100 rounded-full p-2 mr-4">
-              <svg
-                className="w-6 h-6 text-indigo-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                ></path>
-              </svg>
-            </div>
-            <p className="text-gray-700">Track progress in real-time</p>
-          </div>
-          <div className="flex items-center p-4 bg-white rounded-lg shadow-md">
-            <div className="bg-indigo-100 rounded-full p-2 mr-4">
-              <svg
-                className="w-6 h-6 text-indigo-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                ></path>
-              </svg>
-            </div>
-            <p className="text-gray-700">Collaborate with your team</p>
-          </div>
-        </div>
+        {/* Features */}
       </motion.div>
 
       {/* Right Panel */}
@@ -120,7 +132,7 @@ export default function LoginPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-2">
                 <Label
                   htmlFor="email"
@@ -135,8 +147,13 @@ export default function LoginPage() {
                     type="email"
                     placeholder="name@example.com"
                     className="pl-10 h-12 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-                    required
+                    {...register("email")}
                   />
+                  {errors.email && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.email.message}
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="space-y-2">
@@ -152,50 +169,32 @@ export default function LoginPage() {
                     id="password"
                     type="password"
                     className="pl-10 h-12 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-                    required
+                    {...register("password")}
                   />
+                  {errors.password && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.password.message}
+                    </p>
+                  )}
                 </div>
               </div>
-              <Button
-                className="w-full h-12 text-base transition-all bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300"
+              <button
+                className="w-full h-12 text-base transition-all bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 text-white font-medium rounded-lg"
                 type="submit"
                 disabled={isLoading}
               >
-                {isLoading ? (
-                  <svg
-                    className="animate-spin h-5 w-5 mr-3"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                ) : (
-                  "Đăng nhập"
-                )}
-              </Button>
+                {isLoading ? "Đang xử lý..." : "Đăng nhập"}
+              </button>
             </form>
           </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
-            <div className="text-sm text-center text-gray-600">
-              Chưa có tài khoản?{" "}
-              <Link
-                href="/signup"
-                className="text-indigo-600 hover:text-indigo-700 font-medium inline-flex items-center transition-colors"
-              >
-                Đăng ký ngay <ArrowRight className="ml-1 h-4 w-4" />
-              </Link>
-            </div>
+          <CardFooter className="text-sm text-center text-gray-600">
+            Chưa có tài khoản?{" "}
+            <Link
+              href="/signup"
+              className="text-indigo-600 hover:text-indigo-700 font-medium inline-flex items-center transition-colors"
+            >
+              Đăng ký ngay <ArrowRight className="ml-1 h-4 w-4" />
+            </Link>
           </CardFooter>
         </Card>
       </motion.div>
