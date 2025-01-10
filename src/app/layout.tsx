@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar/Navbar";
 import Topbar from "@/components/Navbar/Topbar";
 import React from "react";
 import "tailwindcss/tailwind.css";
+import { Toaster } from "@/components/ui/toaster";
 
 export default function layout({ children }: { children: React.ReactNode }) {
   return (
@@ -16,6 +17,7 @@ export default function layout({ children }: { children: React.ReactNode }) {
             <div className="bg-white">{children}</div>
           </main>
         </div>
+        <Toaster />
       </body>
     </html>
   );
