@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,32 +16,102 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ArrowLeft, User, Mail, Lock, Calendar, Image } from "lucide-react";
+import { ArrowLeft, User, Mail, Lock, Calendar } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { Eye, EyeOff } from "lucide-react";
+
+type SignUpFormValues = {
+  username: string;
+  email: string;
+  password: string;
+  confirm_password: string;
+  date_of_birth: string;
+  avatar_url?: string;
+};
 
 export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SignUpFormValues>();
+  const router = useRouter();
+
+  const onSubmit: SubmitHandler<SignUpFormValues> = async (data) => {
     setIsLoading(true);
+    setPasswordError("");
 
-    if (password !== confirmPassword) {
+    if (data.password !== data.confirm_password) {
       setPasswordError("Mật khẩu không khớp");
+      toast({
+        variant: "destructive",
+        title: "Lỗi",
+        description: "Mật khẩu không khớp",
+      });
       setIsLoading(false);
       return;
     }
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsLoading(false);
+    try {
+      // Gửi yêu cầu đăng ký
+      const registerResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_ENDPOINT}/access/register`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        }
+      );
+
+      if (!registerResponse.ok) {
+        const error = await registerResponse.json();
+        throw new Error(error.message || "Đăng ký thất bại");
+      }
+
+      toast({
+        title: "Thành công",
+        description: "Đăng ký tài khoản thành công",
+      });
+
+      // Gửi yêu cầu đăng nhập
+      const loginResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_ENDPOINT}/access/login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: data.email,
+            password: data.password,
+          }),
+        }
+      );
+
+      if (!loginResponse.ok) {
+        const error = await loginResponse.json();
+        throw new Error(error.message || "Đăng nhập thất bại");
+      }
+
+      // Chuyển hướng đến dashboard
+      router.push("/");
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Lỗi",
+        description:
+          error instanceof Error ? error.message : "Đã có lỗi xảy ra",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row-reverse bg-gradient-to-bl from-indigo-100 via-white to-cyan-100">
-      {/* Left Panel */}
       <motion.div
         initial={{ opacity: 0, x: 50 }}
         animate={{ opacity: 1, x: 0 }}
@@ -114,7 +186,6 @@ export default function SignUpPage() {
         </div>
       </motion.div>
 
-      {/* Right Panel */}
       <motion.div
         initial={{ opacity: 0, x: -50 }}
         animate={{ opacity: 1, x: 0 }}
@@ -131,7 +202,7 @@ export default function SignUpPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-2">
                 <Label
                   htmlFor="username"
@@ -143,10 +214,17 @@ export default function SignUpPage() {
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
                   <Input
                     id="username"
+                    {...register("username", {
+                      required: "Tên đăng nhập là bắt buộc",
+                    })}
                     placeholder="johndoe"
                     className="pl-10 h-12 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-                    required
                   />
+                  {errors.username && (
+                    <p className="text-red-500 text-sm">
+                      {errors.username.message}
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="space-y-2">
@@ -161,10 +239,15 @@ export default function SignUpPage() {
                   <Input
                     id="email"
                     type="email"
+                    {...register("email", { required: "Email là bắt buộc" })}
                     placeholder="name@example.com"
                     className="pl-10 h-12 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-                    required
                   />
+                  {errors.email && (
+                    <p className="text-red-500 text-sm">
+                      {errors.email.message}
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="space-y-2">
@@ -178,17 +261,33 @@ export default function SignUpPage() {
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
                   <Input
                     id="password"
-                    type="password"
-                    className="pl-10 h-12 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    type={showPassword ? "text" : "password"}
+                    {...register("password", {
+                      required: "Mật khẩu là bắt buộc",
+                    })}
+                    className="pl-10 pr-10 h-12 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </button>
+                  {errors.password && (
+                    <p className="text-red-500 text-sm">
+                      {errors.password.message}
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="space-y-2">
                 <Label
-                  htmlFor="confirm-password"
+                  htmlFor="confirmPassword"
                   className="text-sm font-medium text-gray-700"
                 >
                   Xác nhận mật khẩu
@@ -196,17 +295,33 @@ export default function SignUpPage() {
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
                   <Input
-                    id="confirm-password"
-                    type="password"
-                    className="pl-10 h-12 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-                    required
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    id="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    {...register("confirm_password", {
+                      required: "Xác nhận mật khẩu là bắt buộc",
+                    })}
+                    className="pl-10 pr-10 h-12 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </button>
+                  {errors.confirm_password && (
+                    <p className="text-red-500 text-sm">
+                      {errors.confirm_password.message}
+                    </p>
+                  )}
+                  {passwordError && (
+                    <p className="text-red-500 text-sm">{passwordError}</p>
+                  )}
                 </div>
-                {passwordError && (
-                  <p className="text-red-500 text-sm">{passwordError}</p>
-                )}
               </div>
               <div className="space-y-2">
                 <Label
@@ -220,9 +335,16 @@ export default function SignUpPage() {
                   <Input
                     id="date_of_birth"
                     type="date"
+                    {...register("date_of_birth", {
+                      required: "Ngày sinh là bắt buộc",
+                    })}
                     className="pl-10 h-12 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-                    required
                   />
+                  {errors.date_of_birth && (
+                    <p className="text-red-500 text-sm">
+                      {errors.date_of_birth.message}
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="space-y-2">
@@ -233,14 +355,11 @@ export default function SignUpPage() {
                   URL ảnh đại diện (tùy chọn)
                 </Label>
                 <div className="relative">
-                  <Image
-                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5"
-                    aria-hidden="true"
-                    alt="Avatar URL"
-                  />
+                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
                   <Input
                     id="avatar_url"
                     type="url"
+                    {...register("avatar_url")}
                     placeholder="https://example.com/avatar.jpg"
                     className="pl-10 h-12 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
                   />
