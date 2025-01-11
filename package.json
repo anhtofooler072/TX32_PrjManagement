@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
+    "@syncfusion/ej2-gantt": "^28.1.38",
     "apexcharts": "^4.3.0",
     "axios": "^1.7.9",
     "motion": "^11.15.0",
