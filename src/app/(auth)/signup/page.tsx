@@ -19,7 +19,6 @@ import {
 import { ArrowLeft, User, Mail, Lock, Calendar } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Eye, EyeOff } from "lucide-react";
-
 type SignUpFormValues = {
   username: string;
   email: string;
@@ -219,6 +218,7 @@ export default function SignUpPage() {
                     })}
                     placeholder="johndoe"
                     className="pl-10 h-12 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
+                    required
                   />
                   {errors.username && (
                     <p className="text-red-500 text-sm">
@@ -241,6 +241,7 @@ export default function SignUpPage() {
                     type="email"
                     {...register("email", { required: "Email là bắt buộc" })}
                     placeholder="name@example.com"
+                    required
                     className="pl-10 h-12 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
                   />
                   {errors.email && (
@@ -265,6 +266,7 @@ export default function SignUpPage() {
                     {...register("password", {
                       required: "Mật khẩu là bắt buộc",
                     })}
+                    required
                     className="pl-10 pr-10 h-12 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
                   />
                   <button
@@ -300,6 +302,7 @@ export default function SignUpPage() {
                     {...register("confirm_password", {
                       required: "Xác nhận mật khẩu là bắt buộc",
                     })}
+                    required
                     className="pl-10 pr-10 h-12 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
                   />
                   <button
@@ -338,6 +341,7 @@ export default function SignUpPage() {
                     {...register("date_of_birth", {
                       required: "Ngày sinh là bắt buộc",
                     })}
+                    required
                     className="pl-10 h-12 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
                   />
                   {errors.date_of_birth && (
@@ -365,6 +369,7 @@ export default function SignUpPage() {
                   />
                 </div>
               </div>
+
               <Button
                 className="w-full h-12 text-base transition-all bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300"
                 type="submit"
@@ -404,6 +409,16 @@ export default function SignUpPage() {
               >
                 <ArrowLeft className="mr-1 h-4 w-4" /> Đăng nhập
               </Link>
+            </div>
+            <div className="text-xs text-center text-gray-500">
+              Bằng cách đăng ký, bạn đồng ý với{" "}
+              <Link
+                href="/privacy-policy"
+                className="underline hover:text-indigo-600"
+              >
+                Chính sách bảo mật
+              </Link>{" "}
+              của chúng tôi
             </div>
           </CardFooter>
         </Card>

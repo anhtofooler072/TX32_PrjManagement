@@ -21,6 +21,8 @@ import { toast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { ProfileContext } from "@/contexts/profile-context";
 import { setAccessTokenToLocalStorage } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { SiGoogle } from "react-icons/si";
 
 const loginSchema = z.object({
   email: z.string().email("Email không hợp lệ"),
@@ -96,6 +98,10 @@ export default function LoginPage() {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    router.push(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/access/login/google`);
+  };
+
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-gradient-to-br from-indigo-100 via-white to-cyan-100">
       {/* Left Panel */}
@@ -147,6 +153,7 @@ export default function LoginPage() {
                     type="email"
                     placeholder="name@example.com"
                     className="pl-10 h-12 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
+                    required
                     {...register("email")}
                   />
                   {errors.email && (
@@ -169,6 +176,7 @@ export default function LoginPage() {
                     id="password"
                     type="password"
                     className="pl-10 h-12 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
+                    required
                     {...register("password")}
                   />
                   {errors.password && (
@@ -178,23 +186,75 @@ export default function LoginPage() {
                   )}
                 </div>
               </div>
-              <button
+              <Button
                 className="w-full h-12 text-base transition-all bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 text-white font-medium rounded-lg"
                 type="submit"
                 disabled={isLoading}
               >
-                {isLoading ? "Đang xử lý..." : "Đăng nhập"}
-              </button>
+                {isLoading ? (
+                  <svg
+                    className="animate-spin h-5 w-5 mr-3"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                ) : (
+                  "Đăng nhập"
+                )}
+              </Button>
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-gray-300"></span>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">Hoặc</span>
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full h-12 text-base transition-all border-gray-300 hover:bg-gray-100"
+                onClick={() => {
+                  handleGoogleLogin();
+                }}
+              >
+                <SiGoogle className="w-5 h-5 mr-2" />
+                Đăng nhập bằng Google
+              </Button>
             </form>
           </CardContent>
-          <CardFooter className="text-sm text-center text-gray-600">
-            Chưa có tài khoản?{" "}
-            <Link
-              href="/signup"
-              className="text-indigo-600 hover:text-indigo-700 font-medium inline-flex items-center transition-colors"
-            >
-              Đăng ký ngay <ArrowRight className="ml-1 h-4 w-4" />
-            </Link>
+          <CardFooter className="flex flex-col space-y-4">
+            <div className="text-sm text-center text-gray-600">
+              Chưa có tài khoản?{" "}
+              <Link
+                href="/signup"
+                className="text-indigo-600 hover:text-indigo-700 font-medium inline-flex items-center transition-colors"
+              >
+                Đăng ký ngay <ArrowRight className="ml-1 h-4 w-4" />
+              </Link>
+            </div>
+            <div className="text-xs text-center text-gray-500">
+              Bằng cách đăng nhập, bạn đồng ý với{" "}
+              <Link
+                href="/privacy-policy"
+                className="underline hover:text-indigo-600"
+              >
+                Chính sách bảo mật
+              </Link>{" "}
+              của chúng tôi
+            </div>
           </CardFooter>
         </Card>
       </motion.div>
